@@ -1,11 +1,17 @@
 {% extends "base.html" %}
-
 {% block title %}Booking Confirmed{% endblock %}
-
 {% block content %}
-<h2>Booking confirmed!</h2>
-<p>Thanks, {{ booking.customer_name }}.</p>
-<p>You've booked the <strong>{{ booking.car.name }}</strong>
-   from {{ booking.pickup_date }} to {{ booking.dropoff_date }}.</p>
-<p>Status: {{ booking.get_status_display }}</p>
+<div class="form-card">
+    <h1 class="page-title">Booking confirmed ✅</h1>
+    <p>Thanks, {{ booking.customer_name }}.</p>
+    <p>You've booked the <strong>{{ booking.car.name }}</strong> from
+       {{ booking.pickup_date }} to {{ booking.dropoff_date }}.</p>
+    <p style="margin-top:12px">
+        {{ booking.days }} day{{ booking.days|pluralize }} ×
+        €{{ booking.car.price_per_day }} =
+        <strong>€{{ booking.total_price }}</strong>
+    </p>
+    <p style="margin-top:8px; color:var(--muted)">Status: {{ booking.get_status_display }}</p>
+    <a href="/" class="btn" style="margin-top:20px">Back to fleet</a>
+</div>
 {% endblock %}

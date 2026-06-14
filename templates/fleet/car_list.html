@@ -1,16 +1,46 @@
 {% extends "base.html" %}
-
 {% block title %}Our Fleet{% endblock %}
-
 {% block content %}
-<h2>Our Fleet</h2>
+<h1 class="page-title">Our Fleet</h1>
+<p class="page-subtitle">Pick your dates and book an available car.</p>
+
+<form method="get" class="search-bar">
+    <div class="search-field">
+        <label for="pickup">Pick-up</label>
+        <input type="date" id="pickup" name="pickup" value="{{ pickup }}">
+    </div>
+    <div class="search-field">
+        <label for="dropoff">Drop-off</label>
+        <input type="date" id="dropoff" name="dropoff" value="{{ dropoff }}">
+    </div>
+    <button type="submit" class="btn">Search</button>
+</form>
+
+{% if error %}
+    <p class="search-error">{{ error }}</p>
+{% endif %}
+
+{% if searched %}
+    <p class="search-result-note">Showing cars available from {{ pickup }} to {{ dropoff }}.</p>
+{% endif %}
+
+<div class="car-grid">
 {% for car in cars %}
-    <div>
+    <div class="car-card">
         <h3>{{ car.name }}</h3>
-        <p>{{ car.get_category_display }} · {{ car.seats }} seats · {{ car.get_transmission_display }}</p>
-        <p>€{{ car.price_per_day }} / day</p>
+        <p class="car-specs">{{ car.get_category_display }} · {{ car.seats }} seats · {{ car.get_transmission_display }}</p>
+        {% if car.photo %}
+            <img src="{{ car.photo.url }}" alt="{{ car.name }}" class="car-photo">
+        {% endif %}
+        <p class="car-price">€{{ car.price_per_day }} <span>/ day</span></p>
+        <a href="{% url 'bookings:book' %}?car={{ car.id }}{% if pickup and dropoff %}&pickup={{ pickup }}&dropoff={{ dropoff }}{% endif %}" class="btn">Book this car</a>
     </div>
 {% empty %}
-    <p>No cars available right now.</p>
+    {% if searched %}
+        <p>No cars available for those dates — try different ones.</p>
+    {% else %}
+        <p>No cars available right now.</p>
+    {% endif %}
 {% endfor %}
+</div>
 {% endblock %}

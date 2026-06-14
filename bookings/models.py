@@ -19,11 +19,33 @@ class Booking(models.Model):
 
     pickup_date = models.DateField()
     dropoff_date = models.DateField()
+    total_price = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
+    )
+
+    @property
+    def days(self):
+        return max((self.dropoff_date - self.pickup_date).days, 1)
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.days * self.car.price_per_day
+        super().save(*args, **kwargs)
 
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default="pending"
+    )
+    total_price = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.car.name} — {self.customer_name} ({self.pickup_date} → {self.dropoff_date})"
+
+    @property
+    def days(self):
+        return max((self.dropoff_date - self.pickup_date).days, 1)
+
+    def save(self, *args, **kwargs):
+        self.total_price = self.days * self.car.price_per_day
+        super().save(*args, **kwargs)

@@ -9,6 +9,7 @@ class BookingAdmin(admin.ModelAdmin):
         "customer_name",
         "pickup_date",
         "dropoff_date",
+        "total_price",
         "status",
     )
     list_filter = ("status", "car")

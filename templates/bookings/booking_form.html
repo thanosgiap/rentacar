@@ -1,13 +1,69 @@
 {% extends "base.html" %}
-
 {% block title %}Book a Car{% endblock %}
-
 {% block content %}
-<h2>Book a Car</h2>
+<h1 class="page-title">Book a Car</h1>
+<p class="page-subtitle">Fill in your details and we'll confirm your reservation.</p>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Confirm booking</button>
-</form>
+<div class="booking-layout">
+    {% if selected_car %}
+    <aside class="car-detail">
+        {% if selected_car.photo %}
+        <img src="{{ selected_car.photo.url }}" alt="{{ selected_car.name }}" class="car-detail-photo">
+        {% endif %}
+        <h2>{{ selected_car.name }}</h2>
+        <p class="car-detail-price">€{{ selected_car.price_per_day }} <span>/ day</span></p>
+        <ul class="car-detail-specs">
+            <li><span>Category</span><strong>{{ selected_car.get_category_display }}</strong></li>
+            <li><span>Seats</span><strong>{{ selected_car.seats }}</strong></li>
+            <li><span>Doors</span><strong>{{ selected_car.doors }}</strong></li>
+            <li><span>Luggage</span><strong>{{ selected_car.luggage }} bags</strong></li>
+            <li><span>Transmission</span><strong>{{ selected_car.get_transmission_display }}</strong></li>
+            <li><span>Fuel</span><strong>{{ selected_car.get_fuel_type_display }}</strong></li>
+            <li><span>Odometer</span><strong>{{ selected_car.mileage_km }} km</strong></li>
+        </ul>
+    </aside>
+    {% endif %}
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            {% if selected_car %}
+            <div class="price-estimate" id="price-estimate">Pick your dates to see the total.</div>
+            {% endif %}
+            <button type="submit" class="btn btn-accent">Confirm booking</button>
+        </form>
+    </div>
+
+    {% if selected_car %}
+    <script>
+        const rate = {{ selected_car.price_per_day }};
+        const pickup = document.getElementById("id_pickup_date");
+        const dropoff = document.getElementById("id_dropoff_date");
+        const out = document.getElementById("price-estimate");
+
+        function updateTotal() {
+            if (pickup.value && dropoff.value) {
+                const d1 = new Date(pickup.value);
+                const d2 = new Date(dropoff.value);
+                if (d2 < d1) {
+                    out.textContent = "Drop-off can't be before pick-up.";
+                    return;
+                }
+                let days = Math.round((d2 - d1) / 86400000);
+                if (days < 1) days = 1;
+                const label = days + " day" + (days > 1 ? "s" : "");
+                out.textContent = label + " x \u20AC" + rate.toFixed(2) + " = \u20AC" + (days * rate).toFixed(2);
+            } else {
+                out.textContent = "Pick your dates to see the total.";
+            }
+        }
+        pickup.addEventListener("change", updateTotal);
+        dropoff.addEventListener("change", updateTotal);
+        updateTotal();
+    </script>
+    {% endif %}
+
+
+</div>
 {% endblock %}

@@ -1,0 +1,303 @@
+/* ---- Design tokens ---- */
+:root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --ink: #1a2330;
+    --muted: #667085;
+    --primary: #0f4c81;       /* Aegean blue */
+    --primary-dark: #0b3a64;
+    --accent: #e8833a;        /* warm sand */
+    --border: #e6eaf0;
+    --radius: 14px;
+    --shadow: 0 8px 30px rgba(16, 40, 70, 0.08);
+}
+
+/* ---- Base ---- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+}
+
+h1, h2, h3 {
+    font-family: "Space Grotesk", "Inter", sans-serif;
+    line-height: 1.2;
+}
+
+a { color: var(--primary); text-decoration: none; }
+
+.container {
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ---- Header / nav ---- */
+.site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+}
+
+.logo {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+}
+
+.nav-links a {
+    margin-left: 24px;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.nav-links a:hover { color: var(--primary); }
+
+/* ---- Page heading ---- */
+main.container { padding-top: 48px; padding-bottom: 64px; }
+.page-title { font-size: 2rem; margin-bottom: 8px; }
+.page-subtitle { color: var(--muted); margin-bottom: 36px; }
+
+/* ---- Car grid ---- */
+.car-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.car-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.car-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 40px rgba(16, 40, 70, 0.12);
+}
+
+.car-card h3 { font-size: 1.25rem; margin-bottom: 6px; }
+.car-specs { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
+
+.car-price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: "Space Grotesk", sans-serif;
+    margin-bottom: 20px;
+}
+.car-price span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+
+/* ---- Buttons ---- */
+.btn {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    text-align: center;
+    transition: background 0.15s ease;
+}
+.btn:hover { background: var(--primary-dark); color: #fff; }
+.btn-accent { background: var(--accent); }
+.btn-accent:hover { background: #d4712a; }
+.car-card .btn { margin-top: auto; }
+
+/* ---- Forms ---- */
+.form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 32px;
+    max-width: 520px;
+}
+.form-card p { margin-bottom: 18px; }
+.form-card label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; }
+
+.form-card input,
+.form-card select {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #fff;
+}
+.form-card input:focus,
+.form-card select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
+}
+
+.errorlist {
+    list-style: none;
+    color: #c0392b;
+    background: #fdecea;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 0.92rem;
+}
+
+/* ---- Footer ---- */
+.site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 28px 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.car-photo {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+/* ---- Booking two-column layout ---- */
+.booking-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: stretch;
+}
+
+.booking-layout .form-card { max-width: none; }
+
+.car-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+}
+
+.car-detail-photo {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 18px;
+}
+
+.car-detail h2 { font-size: 1.5rem; margin-bottom: 4px; }
+
+.car-detail-price {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 20px;
+}
+.car-detail-price span { font-size: 0.85rem; font-weight: 400; color: var(--muted); }
+
+.car-detail-specs { list-style: none; }
+.car-detail-specs li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+}
+.car-detail-specs li:last-child { border-bottom: none; }
+.car-detail-specs li span { color: var(--muted); }
+
+/* ---- Search bar ---- */
+.search-bar {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+}
+.search-field {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 160px;
+}
+.search-field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+.search-field input {
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+.search-field input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.12);
+}
+.search-bar .btn { height: 46px; }
+.search-result-note {
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+.search-error {
+    color: #c0392b;
+    background: #fdecea;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.price-estimate {
+    background: #eef4fb;
+    border: 1px solid #d4e3f3;
+    color: var(--primary-dark);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    font-weight: 600;
+}
+
+@media (max-width: 760px) {
+    .booking-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+    .nav { height: 60px; }
+    .page-title { font-size: 1.6rem; }
+}

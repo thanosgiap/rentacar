@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Booking Confirmed{% endblock %}
+
+{% block content %}
+<h2>Booking confirmed!</h2>
+<p>Thanks, {{ booking.customer_name }}.</p>
+<p>You've booked the <strong>{{ booking.car.name }}</strong>
+   from {{ booking.pickup_date }} to {{ booking.dropoff_date }}.</p>
+<p>Status: {{ booking.get_status_display }}</p>
+{% endblock %}

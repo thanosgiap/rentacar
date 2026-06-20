@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.shortcuts import render
+from django.utils import timezone
 from .models import Car
 from bookings.services import available_cars
 
@@ -26,6 +27,8 @@ def car_list(request):
             error = "Please choose both a pick-up and a drop-off date."
         elif not pickup or not dropoff:
             error = "Please enter valid dates."
+        elif pickup < timezone.localdate():
+            error = "Pick-up date can't be in the past."
         elif dropoff < pickup:
             error = "The drop-off date can't be before the pick-up date."
         else:
@@ -38,4 +41,5 @@ def car_list(request):
         "dropoff": dropoff_str,
         "searched": searched,
         "error": error,
+        "today": timezone.localdate().isoformat(),
     })

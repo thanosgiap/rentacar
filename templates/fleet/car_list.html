@@ -7,11 +7,11 @@
 <form method="get" class="search-bar">
     <div class="search-field">
         <label for="pickup">Pick-up</label>
-        <input type="date" id="pickup" name="pickup" value="{{ pickup }}">
+        <input type="date" id="pickup" name="pickup" value="{{ pickup }}" min="{{ today }}">
     </div>
     <div class="search-field">
         <label for="dropoff">Drop-off</label>
-        <input type="date" id="dropoff" name="dropoff" value="{{ dropoff }}">
+        <input type="date" id="dropoff" name="dropoff" value="{{ dropoff }}" min="{{ today }}">
     </div>
     <button type="submit" class="btn">Search</button>
 </form>

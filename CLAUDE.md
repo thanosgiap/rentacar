@@ -20,7 +20,10 @@ confirmation. The owner manages cars and bookings via the Django admin.
 
 ## Models
 - `fleet.Car` — name, category, seats, doors, luggage, transmission,
-  fuel_type, mileage_km, price_per_day (Decimal), photo, is_available
+  fuel_type, mileage_km, price_per_day (Decimal), is_available
+- `fleet.CarPhoto` — car (FK, `related_name="photos"`), image, order.
+  A car can have any number of photos; `order` controls carousel sequence.
+  Managed as an inline on `CarAdmin`, not its own admin page.
 - `bookings.Booking` — car (FK), customer_name/email/phone, pickup_date,
   dropoff_date, status (pending/confirmed/cancelled), total_price (Decimal)
 

@@ -8,14 +8,24 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
     <header class="site-header">
         <div class="container nav">
-            <a href="/" class="logo">RentACar</a>
+            <a href="/" class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13"></path>
+                    <rect x="2" y="13" width="20" height="5" rx="1.5"></rect>
+                    <circle cx="7" cy="18.5" r="1.5"></circle>
+                    <circle cx="17" cy="18.5" r="1.5"></circle>
+                </svg>
+                RentACar
+            </a>
             <nav class="nav-links">
                 <a href="/">Fleet</a>
                 <a href="{% url 'bookings:book' %}">Book</a>
+                <a href="{% url 'fleet:contact' %}">Contact Us</a>
             </nav>
         </div>
     </header>
@@ -25,7 +35,26 @@
     </main>
 
     <footer class="site-footer">
-        <div class="container">© RentACar · Thessaloniki, Greece</div>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <p class="footer-logo">RentACar</p>
+                <p class="footer-tagline">Friendly, reliable car rental based in Thessaloniki, Greece.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="{% url 'fleet:car_list' %}">Fleet</a>
+                <a href="{% url 'bookings:book' %}">Book a Car</a>
+                <a href="{% url 'fleet:contact' %}">Contact Us</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <a href="tel:+306900000000">+30 690 000 0000</a>
+                <a href="mailto:info@rentacar.example">info@rentacar.example</a>
+                <p>Thessaloniki, Greece</p>
+            </div>
+        </div>
+        <div class="container footer-bottom">© {% now "Y" %} RentACar · Thessaloniki, Greece</div>
     </footer>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

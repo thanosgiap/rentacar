@@ -36,10 +36,14 @@ def car_list(request):
             searched = True
 
     return render(request, "fleet/car_list.html", {
-        "cars": cars,
+        "cars": cars.prefetch_related("photos"),
         "pickup": pickup_str,
         "dropoff": dropoff_str,
         "searched": searched,
         "error": error,
         "today": timezone.localdate().isoformat(),
     })
+
+
+def contact(request):
+    return render(request, "fleet/contact.html")

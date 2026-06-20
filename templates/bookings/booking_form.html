@@ -1,69 +1,190 @@
 {% extends "base.html" %}
 {% block title %}Book a Car{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/css/splide.min.css">
+{% endblock %}
+
 {% block content %}
 <h1 class="page-title">Book a Car</h1>
 <p class="page-subtitle">Fill in your details and we'll confirm your reservation.</p>
 
 <div class="booking-layout">
-    {% if selected_car %}
-    <aside class="car-detail">
-        {% if selected_car.photo %}
-        <img src="{{ selected_car.photo.url }}" alt="{{ selected_car.name }}" class="car-detail-photo">
-        {% endif %}
-        <h2>{{ selected_car.name }}</h2>
-        <p class="car-detail-price">€{{ selected_car.price_per_day }} <span>/ day</span></p>
+    <aside class="car-detail" id="car-detail" style="display:none;">
+        <div class="splide car-photo-splide" id="car-photo-splide" style="display:none;">
+            <div class="splide__track">
+                <ul class="splide__list" id="car-photo-list"></ul>
+            </div>
+        </div>
+        <h2 id="car-detail-name"></h2>
+        <p class="car-detail-price" id="car-detail-price"></p>
         <ul class="car-detail-specs">
-            <li><span>Category</span><strong>{{ selected_car.get_category_display }}</strong></li>
-            <li><span>Seats</span><strong>{{ selected_car.seats }}</strong></li>
-            <li><span>Doors</span><strong>{{ selected_car.doors }}</strong></li>
-            <li><span>Luggage</span><strong>{{ selected_car.luggage }} bags</strong></li>
-            <li><span>Transmission</span><strong>{{ selected_car.get_transmission_display }}</strong></li>
-            <li><span>Fuel</span><strong>{{ selected_car.get_fuel_type_display }}</strong></li>
-            <li><span>Odometer</span><strong>{{ selected_car.mileage_km }} km</strong></li>
+            <li><span>Category</span><strong id="car-detail-category"></strong></li>
+            <li><span>Seats</span><strong id="car-detail-seats"></strong></li>
+            <li><span>Doors</span><strong id="car-detail-doors"></strong></li>
+            <li id="car-detail-luggage-row"><span>Luggage</span><strong id="car-detail-luggage"></strong></li>
+            <li><span>Transmission</span><strong id="car-detail-transmission"></strong></li>
+            <li><span>Fuel</span><strong id="car-detail-fuel"></strong></li>
+            <li><span>Odometer</span><strong id="car-detail-mileage"></strong></li>
         </ul>
     </aside>
-    {% endif %}
 
     <div class="form-card">
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            {% if selected_car %}
             <div class="price-estimate" id="price-estimate">Pick your dates to see the total.</div>
-            {% endif %}
             <button type="submit" class="btn btn-accent">Confirm booking</button>
         </form>
     </div>
-
-    {% if selected_car %}
-    <script>
-        const rate = {{ selected_car.price_per_day }};
-        const pickup = document.getElementById("id_pickup_date");
-        const dropoff = document.getElementById("id_dropoff_date");
-        const out = document.getElementById("price-estimate");
-
-        function updateTotal() {
-            if (pickup.value && dropoff.value) {
-                const d1 = new Date(pickup.value);
-                const d2 = new Date(dropoff.value);
-                if (d2 < d1) {
-                    out.textContent = "Drop-off can't be before pick-up.";
-                    return;
-                }
-                let days = Math.round((d2 - d1) / 86400000);
-                if (days < 1) days = 1;
-                const label = days + " day" + (days > 1 ? "s" : "");
-                out.textContent = label + " x \u20AC" + rate.toFixed(2) + " = \u20AC" + (days * rate).toFixed(2);
-            } else {
-                out.textContent = "Pick your dates to see the total.";
-            }
-        }
-        pickup.addEventListener("change", updateTotal);
-        dropoff.addEventListener("change", updateTotal);
-        updateTotal();
-    </script>
-    {% endif %}
-
-
 </div>
+
+{{ cars_data|json_script:"cars-data" }}
+
+<div class="photo-lightbox" id="photo-lightbox" style="display:none;">
+    <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+    <div class="splide lightbox-splide" id="lightbox-splide" onclick="event.stopPropagation()">
+        <div class="splide__track">
+            <ul class="splide__list" id="lightbox-photo-list"></ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/js/splide.min.js"></script>
+<script>
+    const carsData = JSON.parse(document.getElementById("cars-data").textContent);
+    const carSelect = document.getElementById("id_car");
+    const detail = document.getElementById("car-detail");
+    const pickup = document.getElementById("id_pickup_date");
+    const dropoff = document.getElementById("id_dropoff_date");
+    const out = document.getElementById("price-estimate");
+    const photoSplideEl = document.getElementById("car-photo-splide");
+    const photoList = document.getElementById("car-photo-list");
+    const lightbox = document.getElementById("photo-lightbox");
+    const lightboxSplideEl = document.getElementById("lightbox-splide");
+    const lightboxList = document.getElementById("lightbox-photo-list");
+    const lightboxClose = document.getElementById("lightbox-close");
+    let splideInstance = null;
+    let lightboxInstance = null;
+    let currentCar = null;
+
+    function buildSlides(list, urls, photoClass) {
+        list.innerHTML = "";
+        urls.forEach((url) => {
+            const li = document.createElement("li");
+            li.className = "splide__slide";
+            const img = document.createElement("img");
+            img.src = url;
+            img.className = photoClass;
+            li.appendChild(img);
+            list.appendChild(li);
+        });
+    }
+
+    function showPhotos(car) {
+        currentCar = car;
+        if (splideInstance) {
+            splideInstance.destroy();
+            splideInstance = null;
+        }
+
+        const urls = car ? car.photo_urls : [];
+        if (!urls.length) {
+            photoSplideEl.style.display = "none";
+            return;
+        }
+
+        buildSlides(photoList, urls, "car-detail-photo");
+        photoSplideEl.style.display = "";
+        splideInstance = new Splide(photoSplideEl, {
+            type: "loop",
+            arrows: urls.length > 1,
+            pagination: urls.length > 1,
+            drag: urls.length > 1,
+        }).mount();
+    }
+
+    function openLightbox() {
+        const urls = currentCar ? currentCar.photo_urls : [];
+        if (!urls.length) return;
+
+        buildSlides(lightboxList, urls, "lightbox-photo");
+        lightbox.style.display = "flex";
+        lightboxInstance = new Splide(lightboxSplideEl, {
+            type: "loop",
+            arrows: urls.length > 1,
+            pagination: urls.length > 1,
+            drag: urls.length > 1,
+            start: splideInstance ? splideInstance.index : 0,
+        });
+        if (splideInstance) {
+            lightboxInstance.sync(splideInstance);
+        }
+        lightboxInstance.mount();
+    }
+
+    function closeLightbox() {
+        lightbox.style.display = "none";
+        if (lightboxInstance) {
+            lightboxInstance.destroy();
+            lightboxInstance = null;
+        }
+    }
+
+    photoList.addEventListener("click", (event) => {
+        if (event.target.tagName === "IMG") openLightbox();
+    });
+    lightboxClose.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", closeLightbox);
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeLightbox();
+    });
+
+    function updateCarDetail() {
+        const car = carsData[carSelect.value];
+        if (!car) {
+            detail.style.display = "none";
+            return;
+        }
+        detail.style.display = "";
+        showPhotos(car);
+        document.getElementById("car-detail-name").textContent = car.name;
+        document.getElementById("car-detail-price").innerHTML = "€" + car.price_per_day + " <span>/ day</span>";
+        document.getElementById("car-detail-category").textContent = car.category;
+        document.getElementById("car-detail-seats").textContent = car.seats;
+        document.getElementById("car-detail-doors").textContent = car.doors;
+        document.getElementById("car-detail-luggage-row").style.display = car.luggage ? "" : "none";
+        document.getElementById("car-detail-luggage").textContent = car.luggage + " bags";
+        document.getElementById("car-detail-transmission").textContent = car.transmission;
+        document.getElementById("car-detail-fuel").textContent = car.fuel_type;
+        document.getElementById("car-detail-mileage").textContent = car.mileage_km + " km";
+    }
+
+    function updateTotal() {
+        const car = carsData[carSelect.value];
+        if (!car || !pickup.value || !dropoff.value) {
+            out.textContent = "Pick your dates to see the total.";
+            return;
+        }
+        const d1 = new Date(pickup.value);
+        const d2 = new Date(dropoff.value);
+        if (d2 < d1) {
+            out.textContent = "Drop-off can't be before pick-up.";
+            return;
+        }
+        let days = Math.round((d2 - d1) / 86400000);
+        if (days < 1) days = 1;
+        const rate = parseFloat(car.price_per_day);
+        const label = days + " day" + (days > 1 ? "s" : "");
+        out.textContent = label + " x €" + rate.toFixed(2) + " = €" + (days * rate).toFixed(2);
+    }
+
+    carSelect.addEventListener("change", () => { updateCarDetail(); updateTotal(); });
+    pickup.addEventListener("change", updateTotal);
+    dropoff.addEventListener("change", updateTotal);
+    updateCarDetail();
+    updateTotal();
+</script>
 {% endblock %}

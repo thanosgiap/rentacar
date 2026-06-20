@@ -24,10 +24,24 @@ def book(request):
             initial["dropoff_date"] = request.GET.get("dropoff")
         form = BookingForm(initial=initial)
 
-    selected_car = Car.objects.filter(id=car_id).first() if car_id else None
+    cars_data = {
+        car.id: {
+            "name": car.name,
+            "price_per_day": str(car.price_per_day),
+            "photo_urls": [photo.image.url for photo in car.photos.all()],
+            "category": car.get_category_display(),
+            "seats": car.seats,
+            "doors": car.doors,
+            "luggage": car.luggage,
+            "transmission": car.get_transmission_display(),
+            "fuel_type": car.get_fuel_type_display(),
+            "mileage_km": car.mileage_km,
+        }
+        for car in Car.objects.prefetch_related("photos")
+    }
     return render(request, "bookings/booking_form.html", {
         "form": form,
-        "selected_car": selected_car,
+        "cars_data": cars_data,
     })
 
 

@@ -1,8 +1,16 @@
 {% extends "base.html" %}
 {% block title %}Our Fleet{% endblock %}
 {% block content %}
-<h1 class="page-title">Our Fleet</h1>
-<p class="page-subtitle">Pick your dates and book an available car.</p>
+<section class="hero">
+    <div class="hero-inner">
+        <p class="hero-kicker">Car Rental · Thessaloniki, Greece</p>
+        <h1 class="hero-title">Drive Greece on your own time.</h1>
+        <p class="hero-subtitle">Honest prices, well-kept cars, zero hidden fees. Pick your dates and hit the road.</p>
+    </div>
+    <svg class="hero-wave" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,40 C240,90 480,0 720,30 C960,60 1200,100 1440,50 L1440,100 L0,100 Z"></path>
+    </svg>
+</section>
 
 <form method="get" class="search-bar">
     <div class="search-field">
@@ -16,6 +24,25 @@
     <button type="submit" class="btn">Search</button>
 </form>
 
+<div class="value-props">
+    <div class="value-prop">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>
+        Fair, all-inclusive pricing
+    </div>
+    <div class="value-prop">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"></path><polyline points="22 4 12 14.5 9 11.5"></polyline></svg>
+        Free cancellation
+    </div>
+    <div class="value-prop">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5z"></path></svg>
+        Full insurance included
+    </div>
+    <div class="value-prop">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        Easy pickup in Thessaloniki
+    </div>
+</div>
+
 {% if error %}
     <p class="search-error">{{ error }}</p>
 {% endif %}
@@ -24,17 +51,36 @@
     <p class="search-result-note">Showing cars available from {{ pickup }} to {{ dropoff }}.</p>
 {% endif %}
 
+<h2 class="section-title">Available Cars</h2>
 <div class="car-grid">
 {% for car in cars %}
-    <div class="car-card">
+    <a href="{% url 'bookings:book' %}?car={{ car.id }}{% if pickup and dropoff %}&pickup={{ pickup }}&dropoff={{ dropoff }}{% endif %}" class="car-card">
+        <div class="car-photo-wrap">
+            {% with photo=car.photos.all|first %}
+                {% if photo %}
+                    <img src="{{ photo.image.url }}" alt="{{ car.name }}" class="car-photo">
+                {% endif %}
+            {% endwith %}
+            <span class="car-badge">{{ car.get_category_display }}</span>
+        </div>
         <h3>{{ car.name }}</h3>
-        <p class="car-specs">{{ car.get_category_display }} · {{ car.seats }} seats · {{ car.get_transmission_display }}</p>
-        {% if car.photo %}
-            <img src="{{ car.photo.url }}" alt="{{ car.name }}" class="car-photo">
-        {% endif %}
+        <div class="car-card-specs">
+            <span>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3"></circle><path d="M5 21v-2a7 7 0 0 1 14 0v2"></path></svg>
+                {{ car.seats }} seats
+            </span>
+            <span>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 13a7.97 7.97 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a8 8 0 0 0-1.7-1L15 2.6h-4l-.3 2.5a8 8 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.97 7.97 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1c.5.4 1.1.8 1.7 1l.3 2.4h4l.3-2.5c.6-.2 1.2-.6 1.7-1l2.5 1 2-3.4-2.1-1.6z"></path></svg>
+                {{ car.get_transmission_display }}
+            </span>
+            <span>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s6 6.6 6 11a6 6 0 1 1-12 0c0-4.4 6-11 6-11z"></path></svg>
+                {{ car.get_fuel_type_display }}
+            </span>
+        </div>
         <p class="car-price">€{{ car.price_per_day }} <span>/ day</span></p>
-        <a href="{% url 'bookings:book' %}?car={{ car.id }}{% if pickup and dropoff %}&pickup={{ pickup }}&dropoff={{ dropoff }}{% endif %}" class="btn">Book this car</a>
-    </div>
+        <span class="btn">Book this car</span>
+    </a>
 {% empty %}
     {% if searched %}
         <p>No cars available for those dates — try different ones.</p>

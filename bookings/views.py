@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from fleet.models import Car
 from .forms import BookingForm
@@ -47,4 +48,7 @@ def book(request):
 
 def success(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
-    return render(request, "bookings/success.html", {"booking": booking})
+    return render(request, "bookings/success.html", {
+        "booking": booking,
+        "owner_phone": settings.OWNER_PHONE,
+    })

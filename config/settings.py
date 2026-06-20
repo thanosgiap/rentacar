@@ -125,3 +125,4 @@ MEDIA_ROOT = BASE_DIR / "media"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "RentACar <noreply@rentacar.gr>"
 OWNER_EMAIL = "owner@example.com"   # where new-booking alerts go
+OWNER_PHONE = "+30 690 000 0000"    # shown to customers for booking questions

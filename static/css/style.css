@@ -170,6 +170,24 @@ main.container { padding-top: 48px; padding-bottom: 64px; }
 .form-card p { margin-bottom: 18px; }
 .form-card label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; }
 
+.form-section-title {
+    font-family: "Space Grotesk", sans-serif;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+}
+.form-section-title--second { margin-top: 28px; }
+
+.payment-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+.form-card .iti { width: 100%; }
+
 .form-card input,
 .form-card select {
     width: 100%;
@@ -289,6 +307,7 @@ main.container { padding-top: 48px; padding-bottom: 64px; }
 }
 
 .car-photo-splide {
+    position: relative;
     margin-bottom: 18px;
 }
 
@@ -384,9 +403,16 @@ main.container { padding-top: 48px; padding-bottom: 64px; }
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--primary);
-    margin-bottom: 20px;
+    margin-bottom: 4px;
 }
 .car-detail-price span { font-size: 0.85rem; font-weight: 400; color: var(--muted); }
+
+.car-detail-total {
+    font-size: 0.9rem;
+    color: var(--muted);
+    min-height: 1.3em;
+    margin-bottom: 20px;
+}
 
 .car-detail-specs { list-style: none; }
 .car-detail-specs li {

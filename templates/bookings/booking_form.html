@@ -3,6 +3,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/css/splide.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25/build/css/intlTelInput.css">
 {% endblock %}
 
 {% block content %}
@@ -15,11 +16,13 @@
             <div class="splide__track">
                 <ul class="splide__list" id="car-photo-list"></ul>
             </div>
+            <span class="car-badge" id="car-detail-badge"></span>
         </div>
         <h2 id="car-detail-name"></h2>
         <p class="car-detail-price" id="car-detail-price"></p>
+        <p class="car-detail-total" id="car-detail-total"></p>
         <ul class="car-detail-specs">
-            <li><span>Category</span><strong id="car-detail-category"></strong></li>
+            <li><span>Pickup location</span><strong>Thessaloniki, GR</strong></li>
             <li><span>Seats</span><strong id="car-detail-seats"></strong></li>
             <li><span>Doors</span><strong id="car-detail-doors"></strong></li>
             <li id="car-detail-luggage-row"><span>Luggage</span><strong id="car-detail-luggage"></strong></li>
@@ -30,11 +33,23 @@
     </aside>
 
     <div class="form-card">
-        <form method="post">
+        <form method="post" id="booking-form">
             {% csrf_token %}
-            {{ form.as_p }}
+            {{ form.non_field_errors }}
+
+            <h3 class="form-section-title">Trip details</h3>
+            <p>{{ form.car.label_tag }}{{ form.car }}{{ form.car.errors }}</p>
+            <p>{{ form.pickup_date.label_tag }}{{ form.pickup_date }}{{ form.pickup_date.errors }}</p>
+            <p>{{ form.dropoff_date.label_tag }}{{ form.dropoff_date }}{{ form.dropoff_date.errors }}</p>
             <div class="price-estimate" id="price-estimate">Pick your dates to see the total.</div>
-            <button type="submit" class="btn btn-accent">Confirm booking</button>
+
+            <h3 class="form-section-title form-section-title--second">Your details</h3>
+            <p>{{ form.customer_name.label_tag }}{{ form.customer_name }}{{ form.customer_name.errors }}</p>
+            <p>{{ form.customer_email.label_tag }}{{ form.customer_email }}{{ form.customer_email.errors }}</p>
+            <p>{{ form.customer_phone.label_tag }}{{ form.customer_phone }}{{ form.customer_phone.errors }}</p>
+
+            <button type="submit" class="btn btn-accent" id="submit-btn">Confirm booking</button>
+            <p class="payment-note">You won't be charged now — pay the owner directly at pickup.</p>
         </form>
     </div>
 </div>
@@ -53,6 +68,7 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4/dist/js/splide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25/build/js/intlTelInputWithUtils.min.js"></script>
 <script>
     const carsData = JSON.parse(document.getElementById("cars-data").textContent);
     const carSelect = document.getElementById("id_car");
@@ -152,7 +168,7 @@
         showPhotos(car);
         document.getElementById("car-detail-name").textContent = car.name;
         document.getElementById("car-detail-price").innerHTML = "€" + car.price_per_day + " <span>/ day</span>";
-        document.getElementById("car-detail-category").textContent = car.category;
+        document.getElementById("car-detail-badge").textContent = car.category;
         document.getElementById("car-detail-seats").textContent = car.seats;
         document.getElementById("car-detail-doors").textContent = car.doors;
         document.getElementById("car-detail-luggage-row").style.display = car.luggage ? "" : "none";
@@ -162,23 +178,30 @@
         document.getElementById("car-detail-mileage").textContent = car.mileage_km + " km";
     }
 
-    function updateTotal() {
-        const car = carsData[carSelect.value];
+    function computeBreakdown(car) {
         if (!car || !pickup.value || !dropoff.value) {
-            out.textContent = "Pick your dates to see the total.";
-            return;
+            return { text: "Pick your dates to see the total.", total: null };
         }
         const d1 = new Date(pickup.value);
         const d2 = new Date(dropoff.value);
         if (d2 < d1) {
-            out.textContent = "Drop-off can't be before pick-up.";
-            return;
+            return { text: "Drop-off can't be before pick-up.", total: null };
         }
         let days = Math.round((d2 - d1) / 86400000);
         if (days < 1) days = 1;
         const rate = parseFloat(car.price_per_day);
+        const total = days * rate;
         const label = days + " day" + (days > 1 ? "s" : "");
-        out.textContent = label + " x €" + rate.toFixed(2) + " = €" + (days * rate).toFixed(2);
+        return { text: label + " x €" + rate.toFixed(2) + " = €" + total.toFixed(2), total };
+    }
+
+    function updateTotal() {
+        const car = carsData[carSelect.value];
+        const { text, total } = computeBreakdown(car);
+        out.textContent = text;
+        document.getElementById("car-detail-total").textContent = total !== null ? text : "";
+        document.getElementById("submit-btn").textContent =
+            total !== null ? "Confirm booking — €" + total.toFixed(2) : "Confirm booking";
     }
 
     carSelect.addEventListener("change", () => { updateCarDetail(); updateTotal(); });
@@ -186,5 +209,19 @@
     dropoff.addEventListener("change", updateTotal);
     updateCarDetail();
     updateTotal();
+
+    // Country-code flag dropdown on the phone field.
+    const phoneInput = document.getElementById("id_customer_phone");
+    const iti = window.intlTelInput(phoneInput, {
+        initialCountry: "gr",
+        separateDialCode: true,
+    });
+
+    document.getElementById("booking-form").addEventListener("submit", () => {
+        const fullNumber = iti.getNumber();
+        if (fullNumber) {
+            phoneInput.value = fullNumber;
+        }
+    });
 </script>
 {% endblock %}

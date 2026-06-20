@@ -1,7 +1,15 @@
+import re
+
 from django import forms
 from django.utils import timezone
 from .models import Booking
 from .services import is_car_available
+
+# Accepts an optional leading "+" (country code / extension) plus digits,
+# spaces, dashes and parentheses, e.g. "+30 690 1234567" or "+1 (555) 123-4567".
+PHONE_FORMAT_RE = re.compile(r"^\+?[0-9\s\-()]+$")
+PHONE_MIN_DIGITS = 8
+PHONE_MAX_DIGITS = 15  # ITU E.164 international maximum, country code included
 
 
 class BookingForm(forms.ModelForm):
@@ -9,16 +17,31 @@ class BookingForm(forms.ModelForm):
         model = Booking
         fields = [
             "car",
+            "pickup_date",
+            "dropoff_date",
             "customer_name",
             "customer_email",
             "customer_phone",
-            "pickup_date",
-            "dropoff_date",
         ]
         widgets = {
             "pickup_date": forms.DateInput(attrs={"type": "date"}),
             "dropoff_date": forms.DateInput(attrs={"type": "date"}),
+            "customer_phone": forms.TextInput(attrs={"placeholder": "690 1234567"}),
         }
+
+    def clean_customer_phone(self):
+        phone = self.cleaned_data["customer_phone"].strip()
+        if not PHONE_FORMAT_RE.match(phone):
+            raise forms.ValidationError(
+                "Enter a valid phone number, e.g. +30 690 1234567."
+            )
+        digit_count = len(re.sub(r"\D", "", phone))
+        if not (PHONE_MIN_DIGITS <= digit_count <= PHONE_MAX_DIGITS):
+            raise forms.ValidationError(
+                f"Phone number must be {PHONE_MIN_DIGITS} to {PHONE_MAX_DIGITS} digits, "
+                "including the country code."
+            )
+        return phone
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

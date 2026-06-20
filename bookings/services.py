@@ -34,11 +34,12 @@ def send_booking_emails(booking):
         subject="Your RentACar booking is confirmed",
         message=(
             f"Hi {booking.customer_name},\n\n"
-            f"Your booking is confirmed:\n"
-            f"  Car: {booking.car.name}\n"
-            f"  From: {booking.pickup_date}\n"
-            f"  To:   {booking.dropoff_date}\n"
+            f"Thank you for booking with RentACar! Here are your details:\n\n"
+            f"  Car:   {booking.car.name}\n"
+            f"  From:  {booking.pickup_date}\n"
+            f"  To:    {booking.dropoff_date}\n"
             f"  Total: €{booking.total_price}\n\n"
+            f"Need anything or have a question? Call us at {settings.OWNER_PHONE}.\n\n"
             f"See you soon!\nRentACar"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,

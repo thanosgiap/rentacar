@@ -22,11 +22,13 @@ class BookingForm(forms.ModelForm):
             "customer_name",
             "customer_email",
             "customer_phone",
+            "payment_method",
         ]
         widgets = {
             "pickup_date": forms.DateInput(attrs={"type": "date"}),
             "dropoff_date": forms.DateInput(attrs={"type": "date"}),
             "customer_phone": forms.TextInput(attrs={"placeholder": "690 1234567"}),
+            "payment_method": forms.RadioSelect,
         }
 
     def clean_customer_phone(self):

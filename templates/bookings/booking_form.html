@@ -48,8 +48,24 @@
             <p>{{ form.customer_email.label_tag }}{{ form.customer_email }}{{ form.customer_email.errors }}</p>
             <p>{{ form.customer_phone.label_tag }}{{ form.customer_phone }}{{ form.customer_phone.errors }}</p>
 
+            <h3 class="form-section-title form-section-title--second">How would you like to pay?</h3>
+            <div class="payment-options">
+                {% for radio in form.payment_method %}
+                    <label class="payment-option">
+                        {{ radio.tag }}
+                        {% if radio.data.value == "card" %}
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        {% else %}
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        {% endif %}
+                        <span>{{ radio.choice_label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+            {{ form.payment_method.errors }}
+
             <button type="submit" class="btn btn-accent" id="submit-btn">Confirm booking</button>
-            <p class="payment-note">You won't be charged now — pay the owner directly at pickup.</p>
+            <p class="payment-note" id="payment-note"></p>
         </form>
     </div>
 </div>
@@ -195,20 +211,37 @@
         return { text: label + " x €" + rate.toFixed(2) + " = €" + total.toFixed(2), total };
     }
 
+    function isCardSelected() {
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        return !!selected && selected.value === "card";
+    }
+
     function updateTotal() {
         const car = carsData[carSelect.value];
         const { text, total } = computeBreakdown(car);
         out.textContent = text;
         document.getElementById("car-detail-total").textContent = total !== null ? text : "";
+        const verb = isCardSelected() ? "Continue to payment" : "Confirm booking";
         document.getElementById("submit-btn").textContent =
-            total !== null ? "Confirm booking — €" + total.toFixed(2) : "Confirm booking";
+            total !== null ? verb + " — €" + total.toFixed(2) : verb;
     }
+
+    function updatePaymentNote() {
+        document.getElementById("payment-note").textContent = isCardSelected()
+            ? "You'll be redirected to Stripe to pay securely by card."
+            : "You won't be charged now — pay the owner directly at pickup.";
+    }
+
+    document.querySelectorAll('input[name="payment_method"]').forEach((radio) => {
+        radio.addEventListener("change", () => { updateTotal(); updatePaymentNote(); });
+    });
 
     carSelect.addEventListener("change", () => { updateCarDetail(); updateTotal(); });
     pickup.addEventListener("change", updateTotal);
     dropoff.addEventListener("change", updateTotal);
     updateCarDetail();
     updateTotal();
+    updatePaymentNote();
 
     // Country-code flag dropdown on the phone field.
     const phoneInput = document.getElementById("id_customer_phone");

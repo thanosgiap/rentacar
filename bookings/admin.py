@@ -11,6 +11,8 @@ class BookingAdmin(admin.ModelAdmin):
         "dropoff_date",
         "total_price",
         "status",
+        "payment_method",
+        "is_paid",
     )
-    list_filter = ("status", "car")
+    list_filter = ("status", "payment_method", "is_paid", "car")
     search_fields = ("customer_name", "customer_email")

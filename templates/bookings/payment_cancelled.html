@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Payment Cancelled{% endblock %}
+{% block content %}
+<div class="form-card">
+    {% if payment_error %}
+        <h1 class="page-title">Card payment isn't available right now</h1>
+        <p>Sorry, {{ booking.customer_name }} — we couldn't reach our payment provider.
+            Your booking for the <strong>{{ booking.car.name }}</strong>
+            ({{ booking.pickup_date }} to {{ booking.dropoff_date }}) is still saved.</p>
+        <p style="margin-top:12px">Please call us to arrange paying at pickup instead.</p>
+    {% else %}
+        <h1 class="page-title">Payment cancelled</h1>
+        <p>No worries, {{ booking.customer_name }} — your booking for the
+            <strong>{{ booking.car.name }}</strong> ({{ booking.pickup_date }} to
+            {{ booking.dropoff_date }}) is still saved, but it isn't paid or confirmed yet.</p>
+        <p style="margin-top:12px">You can try paying again, or call us to arrange paying at
+            pickup instead.</p>
+        <a href="{% url 'bookings:pay' booking.id %}" class="btn btn-accent" style="margin-top:20px">Try paying again</a>
+    {% endif %}
+    <p style="margin-top:16px">Call us at
+        <a href="tel:{{ owner_phone|cut:' ' }}">{{ owner_phone }}</a> and we'll sort it out.</p>
+</div>
+{% endblock %}

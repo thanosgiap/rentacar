@@ -1,9 +1,12 @@
+import stripe
+
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from fleet.models import Car
 from .forms import BookingForm
 from .models import Booking
-from .services import send_booking_emails
+from .services import send_booking_emails, create_checkout_session
 
 
 def book(request):
@@ -11,7 +14,9 @@ def book(request):
         form = BookingForm(request.POST)
         if form.is_valid():
             booking = form.save()
-            send_booking_emails(booking)        
+            if booking.payment_method == "card":
+                return redirect("bookings:pay", booking_id=booking.id)
+            send_booking_emails(booking)
             return redirect("bookings:success", booking_id=booking.id)
         car_id = request.POST.get("car")
     else:
@@ -43,6 +48,48 @@ def book(request):
     return render(request, "bookings/booking_form.html", {
         "form": form,
         "cars_data": cars_data,
+    })
+
+
+def pay(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, is_paid=False)
+    try:
+        session = create_checkout_session(
+            booking,
+            success_url=request.build_absolute_uri(reverse("bookings:payment_success"))
+                + "?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=request.build_absolute_uri(
+                reverse("bookings:payment_cancelled", args=[booking.id])
+            ),
+        )
+    except stripe.error.StripeError:
+        return render(request, "bookings/payment_cancelled.html", {
+            "booking": booking,
+            "owner_phone": settings.OWNER_PHONE,
+            "payment_error": True,
+        })
+    return redirect(session.url)
+
+
+def payment_success(request):
+    session_id = request.GET.get("session_id")
+    session = stripe.checkout.Session.retrieve(session_id)
+    booking = get_object_or_404(Booking, id=session.metadata.get("booking_id"))
+
+    if session.payment_status == "paid" and not booking.is_paid:
+        booking.is_paid = True
+        booking.status = "confirmed"
+        booking.save()
+        send_booking_emails(booking)
+
+    return redirect("bookings:success", booking_id=booking.id)
+
+
+def payment_cancelled(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    return render(request, "bookings/payment_cancelled.html", {
+        "booking": booking,
+        "owner_phone": settings.OWNER_PHONE,
     })
 
 

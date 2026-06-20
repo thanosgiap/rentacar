@@ -9,6 +9,7 @@ confirmation. The owner manages cars and bookings via the Django admin.
 - SQLite in development (PostgreSQL planned for production)
 - Plain Django templates + one hand-written CSS file (no frontend framework)
 - Email via the console backend in development
+- Stripe Checkout for online card payment (`stripe` package, see `requirements.txt`)
 
 ## Project Structure
 - `config/` — settings and root URL config
@@ -25,11 +26,20 @@ confirmation. The owner manages cars and bookings via the Django admin.
   A car can have any number of photos; `order` controls carousel sequence.
   Managed as an inline on `CarAdmin`, not its own admin page.
 - `bookings.Booking` — car (FK), customer_name/email/phone, pickup_date,
-  dropoff_date, status (pending/confirmed/cancelled), total_price (Decimal)
+  dropoff_date, status (pending/confirmed/cancelled), payment_method
+  (pay_at_pickup/card), is_paid (bool), stripe_session_id, total_price (Decimal)
 
 ## Conventions — follow these
 - Business logic lives in `bookings/services.py`, NOT in views.
-  Key functions: `is_car_available()`, `available_cars()`, `send_booking_emails()`.
+  Key functions: `is_car_available()`, `available_cars()`, `send_booking_emails()`,
+  `create_checkout_session()`.
+- Payment flow: a `Booking` is always created first (reserving the dates) regardless
+  of payment method. If `payment_method == "card"`, the user is redirected to Stripe
+  Checkout; `bookings.payment_success` verifies the session server-side before setting
+  `is_paid=True` and `status="confirmed"`, then sends the confirmation emails. Emails
+  are NOT sent at booking-creation time for card payments — only once paid. A card
+  booking that's abandoned before paying stays `pending`/unpaid and still blocks those
+  dates; there's no automatic expiry, so the owner cancels stale ones manually via admin.
 - Availability rule: two date ranges conflict when each starts on or before
   the other ends. Only `pending` and `confirmed` bookings block a car;
   `cancelled` frees it. Same-day handoff counts as a conflict (dates only, no times).
@@ -49,6 +59,7 @@ confirmation. The owner manages cars and bookings via the Django admin.
 - Create admin user: `python manage.py createsuperuser`
 - Django shell: `python manage.py shell`
 - Activate venv (Windows / Git Bash): `source venv/Scripts/activate`
+- Install dependencies: `pip install -r requirements.txt`
 
 ## Gotchas
 - Uploaded media only serves in development, via the `if settings.DEBUG`
@@ -57,8 +68,16 @@ confirmation. The owner manages cars and bookings via the Django admin.
   deployment task.
 - `SECRET_KEY` and `DEBUG` still live in `settings.py` — move them to
   environment variables before deploying.
+- `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` are read from environment
+  variables and default to `""`. Without real test keys set, "Pay by card"
+  fails gracefully to `bookings/payment_cancelled.html` rather than erroring —
+  get test keys from https://dashboard.stripe.com/test/apikeys to actually
+  test the card flow.
+- No Stripe webhook is configured — payment confirmation happens via the
+  `success_url` redirect (`bookings.payment_success`), verified server-side
+  against the Stripe API. Fine at this scale; a webhook would be the more
+  robust addition if traffic grows.
 
 ## Roadmap (not done yet)
 - Content pages: homepage hero, contact/about (phone + WhatsApp), rental terms
 - Deployment: PostgreSQL, DEBUG=False, env vars, hosting, domain
-- Optional: online payment / deposit (Stripe or Viva Wallet)

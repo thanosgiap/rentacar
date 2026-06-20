@@ -8,6 +8,10 @@ class Booking(models.Model):
         ("confirmed", "Confirmed"),
         ("cancelled", "Cancelled"),
     ]
+    PAYMENT_METHOD_CHOICES = [
+        ("pay_at_pickup", "Pay at pickup"),
+        ("card", "Pay by card"),
+    ]
 
     car = models.ForeignKey(
         Car, on_delete=models.PROTECT, related_name="bookings"
@@ -22,6 +26,11 @@ class Booking(models.Model):
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default="pending"
     )
+    payment_method = models.CharField(
+        max_length=20, choices=PAYMENT_METHOD_CHOICES, default="pay_at_pickup"
+    )
+    is_paid = models.BooleanField(default=False)
+    stripe_session_id = models.CharField(max_length=255, blank=True, default="")
     total_price = models.DecimalField(
         max_digits=8, decimal_places=2, null=True, blank=True
     )

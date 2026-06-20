@@ -12,6 +12,9 @@
         <strong>€{{ booking.total_price }}</strong>
     </p>
     <p style="margin-top:8px; color:var(--muted)">Status: {{ booking.get_status_display }}</p>
+    <p style="margin-top:4px; color:var(--muted)">
+        Payment: {% if booking.is_paid %}Paid online by card{% else %}Pay at pickup{% endif %}
+    </p>
     <p style="margin-top:16px">Need anything or have a question? Call us at
         <a href="tel:{{ owner_phone|cut:' ' }}">{{ owner_phone }}</a>.</p>
     <a href="/" class="btn" style="margin-top:20px">Back to fleet</a>
